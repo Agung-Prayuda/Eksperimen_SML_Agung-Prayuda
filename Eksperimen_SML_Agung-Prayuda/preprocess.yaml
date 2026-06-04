@@ -1,0 +1,42 @@
+# File: .github/workflows/preprocess.yml
+name: Student Performance Preprocessing Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Mengizinkan pengaktifan workflow secara manual dari tombol UI GitHub Actions
+
+# MENAMBAHKAN IZIN MENULIS: Memastikan GitHub Actions memiliki otoritas untuk melakukan git push kembali ke repo
+permissions:
+  contents: write
+
+jobs:
+  run-preprocessing-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. Checkout Repository Code
+      uses: actions/checkout@v4 # Diperbarui ke v4 untuk stabilitas jangka panjang
+
+    - name: 2. Setup Python Runtime Environment
+      uses: actions/setup-python@v5 # Diperbarui ke v5
+      with:
+        python-version: '3.10'
+        cache: 'pip' # Opsional: Mempercepat proses instalasi di eksekusi berikutnya
+
+    - name: 3. Install Required Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy scikit-learn
+
+    - name: 4. Execute Automation Preprocessing Script
+      run: |
+        python preprocessing/automate_Agung-Prayuda.py
+
+    - name: 5. Commit and Push Cleaned Dataset
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "chore: automated pipeline update cleaned dataset [skip ci]"
+        file_pattern: 'preprocessing/student_performance_preprocessing/dataset_clean.csv'
+        skip_dirty_check: false
