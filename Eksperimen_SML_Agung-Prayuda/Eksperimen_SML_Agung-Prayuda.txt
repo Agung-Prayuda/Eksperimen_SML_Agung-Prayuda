@@ -1,0 +1,17 @@
+Tautan Repository GitHub - Kriteria 1
+
+Nama Siswa: Agung Prayuda
+Nama Repository: Eksperimen_SML_Agung-Prayuda
+
+Struktur Folder Repository:
+Eksperimen_SML_Agung-Prayuda
+├── student_performance_raw
+│   └── student_data.csv
+├── preprocessing
+│   ├── Eksperimen_Agung-Prayuda.ipynb
+│   └── automate_Agung-Prayuda.py
+│   └── namadataset_preprocessing
+│       └── dataset_clean.csv
+
+Tautan URL Repository (Silakan sesuaikan username GitHub Anda):
+https://github.com/USERNAME_ANDA/Eksperimen_SML_Agung-Prayuda
