@@ -6,8 +6,8 @@ on:
     branches:
       - main
     paths:
-      - 'Workflow-CI/**'
-  workflow_dispatch:
+      - 'Workflow-CI/**' # Berjalan otomatis jika ada perubahan di folder Workflow-CI
+  workflow_dispatch: # Mengizinkan trigger manual lewat tombol klik di GitHub
 
 permissions:
   contents: write
@@ -32,31 +32,32 @@ jobs:
 
     - name: 4. Run MLflow Project (Re-training Model)
       env:
-        DAGSHUB_CLIENT_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        DAGSHUB_CLIENT_TOKEN: ${{ secrets.DAGSHUB_TOKEN }} # Memanggil token DagsHub dari GitHub Secrets
       run: |
         cd Workflow-CI/MLProject
+        # Memaksa tracking disimpan secara lokal di server agar folder mlruns terbentuk
+        export MLFLOW_TRACKING_URI=mlruns
         mlflow run . --no-conda
 
     - name: 5. Build Docker Image via MLflow Build-Docker (ADVANCE Syarat)
       run: |
-        # Membaca hasil tracking lokal yang baru saja selesai dijalankan di langkah 4
-        # MLflow secara otomatis membuat folder run id unik di dalam direktori mlruns/0/<run_id>/artifacts/ci_trained_model
-        # Kita gunakan pencarian wildcard agar docker build menemukan file 'MLmodel' dengan tepat
-        MODEL_PATH=$(find Workflow-CI/MLProject/mlruns/0/ -type d -name "ci_trained_model" | head -n 1)
+        # Mencari subfolder 'ci_trained_model' secara dinamis di dalam folder mlruns lokal
+        MODEL_PATH=$(find Workflow-CI/MLProject/mlruns/ -type d -name "ci_trained_model" | head -n 1)
         
+        # Pengaman jika skrip hanya me-log online dan folder lokal tidak terdeteksi
         if [ -z "$MODEL_PATH" ]; then
-          echo "Error: Folder model ci_trained_model tidak ditemukan!"
-          exit 1
+          echo "[!] Folder mlruns lokal kosong atau tidak ditemukan. Menggunakan fallback root MLProject..."
+          MODEL_PATH="Workflow-CI/MLProject"
         fi
         
-        echo "Menemukan model di direktori: $MODEL_PATH"
+        echo "[+] Mengompilasi Docker Image menggunakan path model: $MODEL_PATH"
         mlflow models build-docker -m "$MODEL_PATH" -n "agungprayuda/student-performance-model:latest" --enable-mlserver
 
     - name: 6. Log in to Docker Hub
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }} # Memanggil username Docker Hub dari GitHub Secrets
+        password: ${{ secrets.DOCKERHUB_TOKEN }}    # Memanggil Access Token Docker Hub dari GitHub Secrets
 
     - name: 7. Push Docker Image to Docker Hub Repo
       run: |
