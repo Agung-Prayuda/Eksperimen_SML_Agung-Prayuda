@@ -33,21 +33,21 @@ jobs:
     - name: 4. Run MLflow Project (Re-training Model)
       env:
         DAGSHUB_CLIENT_TOKEN: ${{ secrets.DAGSHUB_TOKEN }} # DagsHub token untuk MLflow client
-        DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}   # PERBAIKAN: Menyuplai token langsung ke library dagshub.init()
+        DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}   # Token untuk library dagshub.init()
         MLFLOW_ALLOW_FILE_STORE: true                      # Mengizinkan penulisan lokal mlruns pada MLflow versi 2026
       run: |
         cd Workflow-CI/MLProject
-        # Menghubungkan pelacakan langsung ke folder mlruns lokal
+        # Menghubungkan pelacakan langsung ke folder mlruns lokal agar folder fisik terbentuk
         export MLFLOW_TRACKING_URI=mlruns
-        # Menggunakan '--env-manager=local' sebagai pengganti '--no-conda' demi kompatibilitas MLflow terbaru
-        mlflow run . --env-manager=local
+        # PERBAIKAN UTAMA: Mengeksekusi python langsung untuk menghindari konflik Nested Run ID
+        python modelling.py
 
     - name: 5. Build Docker Image via MLflow Build-Docker (ADVANCE Syarat)
       env:
         MLFLOW_ALLOW_FILE_STORE: true                      # Pengaman bypass filestore saat kompilasi image
       run: |
         echo "[+] Mengompilasi Docker Image langsung menggunakan root MLProject..."
-        # Menggunakan folder induk MLProject yang berisi manifest manifest sebagai cetak biru kontainer
+        # Menggunakan folder induk MLProject yang berisi manifest sebagai cetak biru kontainer
         mlflow models build-docker -m "Workflow-CI/MLProject" -n "agungprayuda/student-performance-model:latest" --enable-mlserver
 
     - name: 6. Log in to Docker Hub
