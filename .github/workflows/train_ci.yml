@@ -35,29 +35,21 @@ jobs:
         DAGSHUB_CLIENT_TOKEN: ${{ secrets.DAGSHUB_TOKEN }} # Memanggil token DagsHub dari GitHub Secrets
       run: |
         cd Workflow-CI/MLProject
-        # Memaksa tracking disimpan secara lokal di server agar folder mlruns terbentuk
+        # Menghubungkan pelacakan langsung ke folder mlruns lokal
         export MLFLOW_TRACKING_URI=mlruns
         mlflow run . --no-conda
 
     - name: 5. Build Docker Image via MLflow Build-Docker (ADVANCE Syarat)
       run: |
-        # Mencari subfolder 'ci_trained_model' secara dinamis di dalam folder mlruns lokal
-        MODEL_PATH=$(find Workflow-CI/MLProject/mlruns/ -type d -name "ci_trained_model" | head -n 1)
-        
-        # Pengaman jika skrip hanya me-log online dan folder lokal tidak terdeteksi
-        if [ -z "$MODEL_PATH" ]; then
-          echo "[!] Folder mlruns lokal kosong atau tidak ditemukan. Menggunakan fallback root MLProject..."
-          MODEL_PATH="Workflow-CI/MLProject"
-        fi
-        
-        echo "[+] Mengompilasi Docker Image menggunakan path model: $MODEL_PATH"
-        mlflow models build-docker -m "$MODEL_PATH" -n "agungprayuda/student-performance-model:latest" --enable-mlserver
+        echo "[+] Mengompilasi Docker Image langsung menggunakan root MLProject..."
+        # Menggunakan folder induk MLProject yang berisi cetak biru manifest untuk build container
+        mlflow models build-docker -m "Workflow-CI/MLProject" -n "agungprayuda/student-performance-model:latest" --enable-mlserver
 
     - name: 6. Log in to Docker Hub
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }} # Memanggil username Docker Hub dari GitHub Secrets
-        password: ${{ secrets.DOCKERHUB_TOKEN }}    # Memanggil Access Token Docker Hub dari GitHub Secrets
+        username: ${{ secrets.DOCKERHUB_USERNAME }} # Memanggil username dari GitHub Secrets
+        password: ${{ secrets.DOCKERHUB_TOKEN }}    # Memanggil Access Token dari GitHub Secrets
 
     - name: 7. Push Docker Image to Docker Hub Repo
       run: |
