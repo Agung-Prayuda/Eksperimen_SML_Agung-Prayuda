@@ -37,7 +37,8 @@ jobs:
         cd Workflow-CI/MLProject
         # Menghubungkan pelacakan langsung ke folder mlruns lokal
         export MLFLOW_TRACKING_URI=mlruns
-        mlflow run . --no-conda
+        # PERBAIKAN: Mengganti '--no-conda' menjadi '--env-manager=local' agar kompatibel dengan MLflow terbaru
+        mlflow run . --env-manager=local
 
     - name: 5. Build Docker Image via MLflow Build-Docker (ADVANCE Syarat)
       run: |
