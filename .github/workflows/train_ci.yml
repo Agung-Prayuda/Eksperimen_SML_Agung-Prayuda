@@ -46,16 +46,16 @@ jobs:
       env:
         MLFLOW_ALLOW_FILE_STORE: true                      # Pengaman bypass filestore saat kompilasi image
       run: |
-        echo "[+] Mencari folder model secara dinamis di dalam folder mlruns..."
-        # Mencari subfolder 'ci_trained_model' yang berisi file 'MLmodel' di dalam direktori mlruns
-        TARGET_MODEL_PATH=$(find Workflow-CI/MLProject/mlruns/ -type d -name "ci_trained_model" | head -n 1)
+        echo "[+] Mencari folder model secara dinamis di seluruh direktori kerja..."
+        # PERBAIKAN: Mencari folder 'ci_trained_model' dari root direktori kerja (.) server GitHub
+        TARGET_MODEL_PATH=$(find . -type d -name "ci_trained_model" | head -n 1)
         
         if [ -z "$TARGET_MODEL_PATH" ]; then
-          echo "[!] Eror: Folder 'ci_trained_model' yang berisi file MLmodel tidak ditemukan!"
+          echo "[!] Eror: Folder 'ci_trained_model' yang berisi file MLmodel tetap tidak ditemukan!"
           exit 1
         fi
         
-        echo "[+] Folder model ditemukan di: $TARGET_MODEL_PATH"
+        echo "[+] Folder model sukses ditemukan di: $TARGET_MODEL_PATH"
         echo "[+] Mengompilasi Docker Image menggunakan path tersebut..."
         
         # Mengeksekusi build-docker tepat ke target folder artifact model yang valid
@@ -75,4 +75,4 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "chore: automated ci pipeline artifact upload [skip ci]"
-        file_pattern: 'Workflow-CI/MLProject/mlruns/**'
+        file_pattern: '**/mlruns/**' # PERBAIKAN: Menyelamatkan berkas mlruns dari mana pun folder itu terbentuk
