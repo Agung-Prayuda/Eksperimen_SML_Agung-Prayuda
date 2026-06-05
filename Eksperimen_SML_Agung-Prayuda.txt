@@ -14,4 +14,4 @@ Eksperimen_SML_Agung-Prayuda
 │       └── dataset_clean.csv
 
 Tautan URL Repository (Silakan sesuaikan username GitHub Anda):
-https://github.com/USERNAME_ANDA/Eksperimen_SML_Agung-Prayuda
+https://github.com/Agung-Prayuda/Eksperimen_SML_Agung-Prayuda
