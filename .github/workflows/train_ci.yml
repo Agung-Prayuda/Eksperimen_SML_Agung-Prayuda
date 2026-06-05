@@ -46,9 +46,20 @@ jobs:
       env:
         MLFLOW_ALLOW_FILE_STORE: true                      # Pengaman bypass filestore saat kompilasi image
       run: |
-        echo "[+] Mengompilasi Docker Image langsung menggunakan root MLProject..."
-        # PERBAIKAN: Menghapus '--enable-mlserver' yang sudah tidak didukung di MLflow versi baru
-        mlflow models build-docker -m "Workflow-CI/MLProject" -n "agungprayuda/student-performance-model:latest"
+        echo "[+] Mencari folder model secara dinamis di dalam folder mlruns..."
+        # Mencari subfolder 'ci_trained_model' yang berisi file 'MLmodel' di dalam direktori mlruns
+        TARGET_MODEL_PATH=$(find Workflow-CI/MLProject/mlruns/ -type d -name "ci_trained_model" | head -n 1)
+        
+        if [ -z "$TARGET_MODEL_PATH" ]; then
+          echo "[!] Eror: Folder 'ci_trained_model' yang berisi file MLmodel tidak ditemukan!"
+          exit 1
+        fi
+        
+        echo "[+] Folder model ditemukan di: $TARGET_MODEL_PATH"
+        echo "[+] Mengompilasi Docker Image menggunakan path tersebut..."
+        
+        # Mengeksekusi build-docker tepat ke target folder artifact model yang valid
+        mlflow models build-docker -m "$TARGET_MODEL_PATH" -n "agungprayuda/student-performance-model:latest"
 
     - name: 6. Log in to Docker Hub
       uses: docker/login-action@v3
