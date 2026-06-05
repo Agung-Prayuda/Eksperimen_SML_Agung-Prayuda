@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 2s # Dipercepat ke 2 detik agar grafik di Grafana bergerak real-time saat di-screenshot
+
+scrape_configs:
+  - job_name: "agung_student_monitoring"
+    static_configs:
+      - targets: ["localhost:8001"] # Mengarah ke skrip exporter Python kita
