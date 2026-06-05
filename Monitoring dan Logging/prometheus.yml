@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s # Menarik data setiap 5 detik sekali agar grafik Grafana responsif
+
+scrape_configs:
+  - job_name: "mlflow_model_monitoring"
+    static_configs:
+      - targets: ["localhost:8000"] # Mengarah ke script python exporter Anda
